@@ -192,8 +192,15 @@ Sheet เปิด public อยู่แล้ว แต่ระบบนี�
 
 ### UI
 
-Tailwind v4 ที่ติดตั้งมาแล้ว, ภาษาไทยเป็นหลัก, mobile-first (นักศึกษาเปิดจากมือถือหน้างาน),
-ผลลัพธ์เน้น **เลขที่นั่ง + ห้อง + เวลา** ให้ใหญ่อ่านง่าย, บล็อกที่ยกเลิกแสดง badge แดง
+**ดูรายละเอียดทั้งหมดที่ [`docs/DESIGN.md`](./DESIGN.md)** — ระบบดีไซน์ = โครง Apple design system + สี/โลโก้จาก CI จริงของวิทยาลัย
+
+สรุปย่อ:
+- **shadcn/ui** (new-york, Radix) บน Tailwind v4 ที่ติดตั้งมาแล้ว — `bunx shadcn@latest init -d --base radix`
+- สีเดียวสำหรับทุก interaction: **CP Denim Blue `#1C75BC`** (โหมดมืดไล่เป็น `#60A5DC` เพราะสีเดิม contrast ตก), ตัวหนังสือ `#231F20`
+- ฟอนต์ **Anuphan** (ไทย+ละติน) + **Inter** เฉพาะตัวเลข (tabular-nums), body 17px / line-height 1.65, **ห้าม letter-spacing ติดลบกับไทย**, ข้ามน้ำหนัก 500
+- **เงาเดียวในระบบ** สงวนให้การ์ดเลขที่นั่งสอบ ที่เหลือใช้ hairline border
+- ภาษาไทยเป็นหลัก, mobile-first (นักศึกษาเปิดจากมือถือหน้างาน), เน้น **เลขที่นั่ง + ห้อง + เวลา** ให้ใหญ่อ่านง่าย
+- บล็อกที่ยกเลิกใช้ `Badge variant="destructive"`
 
 ---
 
@@ -202,9 +209,10 @@ Tailwind v4 ที่ติดตั้งมาแล้ว, ภาษาไท
 1. `next.config.ts` เปิด `cacheComponents: true`
 2. `lib/sheet-source.ts` → **`lib/discover.ts` + `lib/sheet-snapshot.json` + `scripts/sync-sheets.ts`** → `lib/csv.ts` → `lib/parse.ts` (+ type `ExamBlock`, `Seat`, `Session`)
 3. `lib/data.ts` cached fetch (ใช้ผลจาก discover) + index helpers
-4. `app/page.tsx` (ค้นหา + สรุป) และ component `<SourceRef>` ที่ใช้ซ้ำทุกหน้า
-5. หน้า `/student/[id]`, `/course/[code]`, `/room/[room]`, `/session/[gid]`
-6. `app/api/revalidate/route.ts`, `app/robots.ts`, ปรับ `app/layout.tsx` (metadata ไทย, ฟอนต์รองรับไทย)
+4. **ติดตั้ง shadcn + ธีม CI**: `shadcn init -d --base radix` → ทับ token ใน `globals.css` ตาม `docs/DESIGN.md` → โหลดฟอนต์ Anuphan/Inter ที่ `<html>` → `shadcn add button input card table badge separator skeleton alert tabs breadcrumb`
+5. `app/page.tsx` (ค้นหา + สรุป) และ component `<SourceRef>` ที่ใช้ซ้ำทุกหน้า
+6. หน้า `/student/[id]`, `/course/[code]`, `/room/[room]`, `/session/[gid]`
+7. `app/api/revalidate/route.ts`, `app/robots.ts`, ปรับ `app/layout.tsx` (metadata ไทย, โลโก้ CP สลับ 2 สี/สีเดียวตามธีม)
 
 ## การตรวจสอบ (end-to-end)
 
