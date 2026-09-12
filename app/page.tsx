@@ -40,6 +40,9 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
 
   const searchResults = q ? searchExam(q, indexes) : null;
 
+  // ตอนมีผลการค้นหา ตัวเลขสถิติต้องเล็กลง ไม่งั้นมันตัวใหญ่กว่าคำตอบที่ผู้ใช้ตามหาและแย่งสายตาไป
+  const statsNumClass = searchResults ? "text-xl" : "text-3xl";
+
   // Sort sessions chronologically
   const sortedSessions = Array.from(indexes.bySession.values()).sort((a, b) =>
     a.sortKey.localeCompare(b.sortKey)
@@ -62,18 +65,31 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
       <SnapshotBanner usedSnapshot={data.usedSnapshot} />
 
       {/* Hero Section (Canvas: bg-background) */}
-      <section className="w-full bg-background py-12 sm:py-20 px-4 sm:px-6">
+      {searchResults ? (
+        /* โหมดค้นหาแล้ว: ย่อ hero เหลือแถบค้นหาแถวเดียว เพื่อดันผลลัพธ์ขึ้นมาให้เห็นทันทีโดยไม่ต้องเลื่อน */
+        <section className="w-full bg-background border-b border-border py-4 px-4 sm:px-6">
+          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
+            <SearchBox initialQuery={q} compact />
+            <p className="text-xs text-muted-foreground sm:ml-auto">
+              ตารางสอบ{getExamTermLabel(data)}
+            </p>
+          </div>
+        </section>
+      ) : (
+      <section className="w-full bg-background py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-[980px] mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-secondary text-foreground border border-border">
             <span>ตารางสอบ{getExamTermLabel(data)}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-semibold leading-tight text-foreground">
-            ระบบค้นหาตารางสอบ CP KKU
+          {/* พาดหัวบอก "สิ่งที่ต้องทำ" ไม่ใช่ชื่อระบบ — ชื่อระบบอยู่บน navbar แล้ว */}
+          <h1 className="text-4xl sm:text-[56px] font-semibold leading-[1.15] text-foreground">
+            ค้นหาที่นั่งสอบของคุณ
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
-            ค้นหารหัสนักศึกษา รายวิชา ห้องสอบ หรือสาขาวิชา พร้อมอ้างอิงตรงกลับไปยัง Google Sheets ต้นฉบับระดับแถว
+          <p className="max-w-2xl mx-auto text-lg sm:text-[21px] text-muted-foreground leading-relaxed">
+            พิมพ์<span className="font-semibold text-foreground">รหัสนักศึกษา</span>ของคุณ
+            แล้วดูได้เลยว่าสอบวิชาอะไร วันไหน ห้องไหน นั่งเลขที่เท่าไร
           </p>
 
           <div className="pt-2">
@@ -81,6 +97,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
           </div>
         </div>
       </section>
+      )}
 
       {/* If searching, render Search Results Section */}
       {searchResults ? (
@@ -112,7 +129,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
             )}
 
             {/* Search Results Tabs */}
-            <div className="max-w-[1440px] mx-auto">
+            <div className="max-w-[980px] mx-auto">
               <Tabs
                 defaultValue={
                   searchResults.students.length > 0
@@ -161,7 +178,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                       ไม่พบข้อมูลนักศึกษาที่ตรงกับคำค้นหา
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       {searchResults.students.map((st) => (
                         <Card
                           key={st.studentId}
@@ -173,7 +190,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                                 {/* stretched link: คลุมทั้งการ์ดให้กดตรงไหนก็เข้าได้ */}
                                 <Link
                                   href={`/student/${st.studentId}`}
-                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
+                                  className="text-2xl sm:text-3xl font-semibold font-num whitespace-nowrap text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {st.studentId}
                                 </Link>
@@ -183,7 +200,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                                   </p>
                                 )}
                               </div>
-                              {st.major && <MajorBadge major={st.major} />}
+                              {st.major && (<div className="shrink-0"><MajorBadge major={st.major} /></div>)}
                             </div>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -337,54 +354,53 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
         </section>
       ) : null}
 
-      {/* Dataset Summary Metrics Tile (Parchment: bg-secondary) */}
-      <section className="w-full bg-secondary py-12 sm:py-16 px-4 sm:px-6">
+      {/* Dataset Summary Metrics Tile (Parchment: bg-secondary)
+          ตอนมีผลการค้นหา ส่วนนี้ยังอยู่ แต่ถูกดันลงไปอยู่ใต้ผลลัพธ์ ให้ผู้ใช้เลื่อนลงมาดูเองได้ */}
+      <section className="w-full bg-secondary py-12 px-4 sm:px-6">
         <div className="max-w-[1440px] mx-auto space-y-6">
-          <div className="max-w-[980px] mx-auto text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
-              สรุปชุดข้อมูลตารางสอบ
+          {/* ส่วนนี้เป็นข้อมูลประกอบ ไม่ใช่สิ่งที่ผู้ใช้ต้องทำ จึงลดขนาดลงไม่ให้แย่งความสนใจจากช่องค้นหา */}
+          <div className="max-w-[980px] mx-auto text-center">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              สรุปชุดข้อมูล · ประมวลผลสดจากใบรายชื่อผู้มีสิทธิ์เข้าสอบทางการ
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              ข้อมูลประมวลผลสดจากประกาศใบรายชื่อผู้มีสิทธิ์เข้าสอบทางการ
-            </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-            <Card className="border-border bg-card shadow-none text-center p-6">
+            <Card className="border-border bg-card shadow-none text-center p-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 รอบสอบ (Sessions)
               </p>
-              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+              <p className={`${statsNumClass} font-semibold font-num text-foreground mt-2`}>
                 {data.sheets.length}
               </p>
               <span className="text-xs text-muted-foreground mt-1">แท็บใน Sheet</span>
             </Card>
 
-            <Card className="border-border bg-card shadow-none text-center p-6">
+            <Card className="border-border bg-card shadow-none text-center p-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 ใบรายชื่อ (Blocks)
               </p>
-              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+              <p className={`${statsNumClass} font-semibold font-num text-foreground mt-2`}>
                 {summary.totalBlocks}
               </p>
               <span className="text-xs text-muted-foreground mt-1">วิชา × SEC × ห้อง</span>
             </Card>
 
-            <Card className="border-border bg-card shadow-none text-center p-6">
+            <Card className="border-border bg-card shadow-none text-center p-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 ที่นั่งสอบทั้งหมด
               </p>
-              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+              <p className={`${statsNumClass} font-semibold font-num text-foreground mt-2`}>
                 {summary.totalSeats.toLocaleString()}
               </p>
               <span className="text-xs text-muted-foreground mt-1">รายการแถว</span>
             </Card>
 
-            <Card className="border-border bg-card shadow-none text-center p-6">
+            <Card className="border-border bg-card shadow-none text-center p-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 นักศึกษา
               </p>
-              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+              <p className={`${statsNumClass} font-semibold font-num text-foreground mt-2`}>
                 {summary.uniqueStudents.toLocaleString()}
               </p>
               <span className="text-xs text-muted-foreground mt-1">รหัสไม่ซ้ำ</span>
@@ -394,7 +410,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 วิชา / ห้องสอบ
               </p>
-              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+              <p className={`${statsNumClass} font-semibold font-num text-foreground mt-2`}>
                 {summary.uniqueCourses} / {summary.uniqueRooms}
               </p>
               <span className="text-xs text-muted-foreground mt-1">วิชา / ห้อง</span>
@@ -405,7 +421,11 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
           <div className="flex justify-center pt-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-background border border-border text-muted-foreground font-num">
               <CheckCircle2 className="w-4 h-4 text-primary" />
-              <span>ความถูกต้องของข้อมูล: มี SEC ครบทั้ง 271 บล็อก (100%)</span>
+              <span>
+                {summary.allBlocksHaveSec
+                  ? `ความถูกต้องของข้อมูล: มี SEC ครบทั้ง ${summary.totalBlocks.toLocaleString()} บล็อก (100%)`
+                  : `ความถูกต้องของข้อมูล: มีบล็อกที่ไม่พบ SEC จากทั้งหมด ${summary.totalBlocks.toLocaleString()} บล็อก`}
+              </span>
             </div>
           </div>
         </div>
@@ -468,7 +488,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
       </section>
 
       {/* Courses & Rooms Quick Access Tile (Parchment: bg-secondary) */}
-      <section className="w-full bg-secondary py-12 sm:py-16 px-4 sm:px-6">
+      <section className="w-full bg-secondary py-12 px-4 sm:px-6">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Courses Quick List */}
           <div className="space-y-4">

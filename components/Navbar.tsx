@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { SPREADSHEET_ID, htmlViewUrl } from "@/lib/sheet-source";
 import { getExamData, getExamTermLabel } from "@/lib/data";
@@ -13,21 +14,34 @@ export async function Navbar({ termLabel }: NavbarProps = {}) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-nav-border bg-nav">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
         <Link
           href="/"
-          className="flex items-center hover:opacity-90 transition-opacity"
+          className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity"
           aria-label="หน้าแรก ระบบค้นหาตารางสอบ CP KKU"
         >
-          <div className="flex flex-col">
-            <span className="text-[15px] font-semibold tracking-normal leading-tight text-nav-foreground">
+          {/* CI: พื้นแถบเป็น CP Black (>=50% black) จึงต้องใช้โลโก้สีเดียวสีขาว
+              clear area = 1/4 ของความสูงโลโก้ (36px / 4 = 9px) */}
+          <div className="hidden sm:flex shrink-0 items-center py-[9px] pr-[9px]">
+            <Image
+              src="/cp-logo-white.png"
+              alt="วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น"
+              width={123}
+              height={36}
+              className="h-9 w-auto object-contain"
+              priority
+            />
+          </div>
+
+          <div className="min-w-0 flex flex-col border-l border-nav-border pl-2 sm:pl-3">
+            <span className="text-sm sm:text-[15px] font-semibold tracking-normal leading-tight text-nav-foreground whitespace-nowrap">
               ระบบค้นหาตารางสอบ
             </span>
-            <span className="text-xs text-nav-muted">{resolvedTermLabel}</span>
+            <span className="block truncate text-xs text-nav-muted">{resolvedTermLabel}</span>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="shrink-0 flex items-center gap-1 sm:gap-2">
           <Link
             href="/"
             className="text-[15px] font-semibold px-3 py-1.5 rounded-full text-nav-foreground hover:bg-nav-hover transition-colors"
