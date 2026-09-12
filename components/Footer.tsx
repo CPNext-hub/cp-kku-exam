@@ -32,9 +32,6 @@ export function Footer({ fetchedAt, academicYear }: FooterProps) {
           <p className="font-semibold text-foreground text-[15px]">
             ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/{academicYear}
           </p>
-          <p className="text-muted-foreground">
-            วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น (CP KKU)
-          </p>
           {formattedTime && (
             <p className="text-xs text-muted-foreground font-num">
               ข้อมูลซิงค์ล่าสุด: {formattedTime}

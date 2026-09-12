@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { SPREADSHEET_ID, htmlViewUrl } from "@/lib/sheet-source";
 import { getAcademicYear, getExamData } from "@/lib/data";
@@ -17,23 +16,10 @@ export async function Navbar({ academicYear }: NavbarProps = {}) {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <Link
           href="/"
-          className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+          className="flex items-center hover:opacity-90 transition-opacity"
           aria-label="หน้าแรก ระบบค้นหาตารางสอบ CP KKU"
         >
-          {/* CI: พื้นแถบเป็น CP Black (>=50% black) จึงต้องใช้โลโก้สีเดียวสีขาว
-              clear area = 1/4 ของความสูงโลโก้ (36px / 4 = 9px) */}
-          <div className="flex items-center py-[9px] pr-[9px]">
-            <Image
-              src="/cp-logo-white.png"
-              alt="วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น"
-              width={123}
-              height={36}
-              className="h-9 w-auto object-contain"
-              priority
-            />
-          </div>
-
-          <div className="flex flex-col border-l border-nav-border pl-3">
+          <div className="flex flex-col">
             <span className="text-[15px] font-semibold tracking-normal leading-tight text-nav-foreground">
               ระบบค้นหาตารางสอบ
             </span>
