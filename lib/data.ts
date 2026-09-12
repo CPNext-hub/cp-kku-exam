@@ -130,6 +130,15 @@ export function getAcademicYear(
   return gregorianYear + 543;
 }
 
+/**
+ * Returns the label for the configured exam announcement. Set
+ * EXAM_TERM_LABEL when a Sheet's exam period cannot be inferred from dates.
+ */
+export function getExamTermLabel(dataset: ExamDataset): string {
+  const configuredLabel = process.env.EXAM_TERM_LABEL?.trim();
+  return configuredLabel || `กลางภาค ภาคการศึกษา 1/${getAcademicYear(dataset)}`;
+}
+
 export interface ExamIndexes {
   byStudent: Map<string, StudentSchedule>;
   byCourse: Map<string, CourseGroup>;

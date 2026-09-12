@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { SPREADSHEET_ID, htmlViewUrl } from "@/lib/sheet-source";
-import { getAcademicYear, getExamData } from "@/lib/data";
+import { getExamData, getExamTermLabel } from "@/lib/data";
 import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
-  academicYear?: number;
+  termLabel?: string;
 }
 
-export async function Navbar({ academicYear }: NavbarProps = {}) {
-  const resolvedAcademicYear = academicYear ?? getAcademicYear(await getExamData());
+export async function Navbar({ termLabel }: NavbarProps = {}) {
+  const resolvedTermLabel = termLabel ?? getExamTermLabel(await getExamData());
 
   return (
     <header className="sticky top-0 z-30 border-b border-nav-border bg-nav">
@@ -23,7 +23,7 @@ export async function Navbar({ academicYear }: NavbarProps = {}) {
             <span className="text-[15px] font-semibold tracking-normal leading-tight text-nav-foreground">
               ระบบค้นหาตารางสอบ
             </span>
-            <span className="text-xs text-nav-muted">กลางภาค 1/{resolvedAcademicYear}</span>
+            <span className="text-xs text-nav-muted">{resolvedTermLabel}</span>
           </div>
         </Link>
 

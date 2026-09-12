@@ -100,7 +100,7 @@ export async function discoverSheets(): Promise<SheetRef[]> {
 **ผลลัพธ์: เทอมหน้าเปลี่ยน Sheet ได้โดยตั้ง `EXAM_SHEET_ID` แล้วรัน sync ก่อน deploy** แท็บ/gid/วิชา/ห้อง ระบบไล่เก็บเองทั้งหมด
 
 ขั้นตอนเปลี่ยน Sheet:
-1. ตั้ง `EXAM_SHEET_ID` ใน `.env` หรือ environment ของ deployment และตั้ง `REVALIDATE_SECRET` ที่เป็นความลับ
+1. ตั้ง `EXAM_SHEET_ID` และ `EXAM_TERM_LABEL` ใน `.env` หรือ environment ของ deployment (เช่น `ปลายภาค ภาคปลาย ปีการศึกษา 2568`) และตั้ง `REVALIDATE_SECRET` ที่เป็นความลับ
 2. รัน `bun run sync:sheets` เพื่อบันทึก snapshot ของไฟล์ใหม่ แล้วตรวจจำนวนแท็บ/บล็อก/ที่นั่ง/วิชา/ห้องจากหน้าแรก
 3. deploy เมื่อยอดรวมและลิงก์อ้างอิงไปยังแถวต้นทางถูกต้อง
 

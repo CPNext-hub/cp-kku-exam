@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getExamData, getAcademicYear, buildIndexes, searchExam } from "@/lib/data";
+import { getExamData, getExamTermLabel, buildIndexes, searchExam } from "@/lib/data";
 import { SearchBox } from "@/components/SearchBox";
 import { SnapshotBanner } from "@/components/SnapshotBanner";
 import { Navbar } from "@/components/Navbar";
@@ -65,7 +65,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
       <section className="w-full bg-background py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-[980px] mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-secondary text-foreground border border-border">
-            <span>ตารางสอบกลางภาค ภาคการศึกษา 1/{getAcademicYear(data)}</span>
+            <span>ตารางสอบ{getExamTermLabel(data)}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-semibold leading-tight text-foreground">
@@ -527,7 +527,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
         </div>
       </section>
 
-      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
+      <Footer fetchedAt={data.fetchedAt} termLabel={getExamTermLabel(data)} />
     </>
   );
 }

@@ -3,10 +3,10 @@ import { ExternalLink } from "lucide-react";
 
 interface FooterProps {
   fetchedAt?: string;
-  academicYear: number;
+  termLabel: string;
 }
 
-export function Footer({ fetchedAt, academicYear }: FooterProps) {
+export function Footer({ fetchedAt, termLabel }: FooterProps) {
   let formattedTime = "";
   if (fetchedAt) {
     try {
@@ -30,7 +30,7 @@ export function Footer({ fetchedAt, academicYear }: FooterProps) {
       <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="space-y-1">
           <p className="font-semibold text-foreground text-[15px]">
-            ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/{academicYear}
+            ระบบค้นหาตารางสอบ{termLabel}
           </p>
           {formattedTime && (
             <p className="text-xs text-muted-foreground font-num">

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getExamData, getAcademicYear, buildIndexes } from "@/lib/data";
+import { getExamData, getExamTermLabel, buildIndexes } from "@/lib/data";
 import { hasDateMismatch } from "@/lib/date-mismatch";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -269,7 +269,7 @@ async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </main>
 
-      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
+      <Footer fetchedAt={data.fetchedAt} termLabel={getExamTermLabel(data)} />
     </>
   );
 }

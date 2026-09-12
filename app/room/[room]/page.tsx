@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getExamData, getAcademicYear, buildIndexes } from "@/lib/data";
+import { getExamData, getExamTermLabel, buildIndexes } from "@/lib/data";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badge";
@@ -117,7 +117,7 @@ async function RoomContent({ params }: RoomPageProps) {
         </div>
       </main>
 
-      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
+      <Footer fetchedAt={data.fetchedAt} termLabel={getExamTermLabel(data)} />
     </>
   );
 }

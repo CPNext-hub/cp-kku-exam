@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getExamData, getAcademicYear, buildIndexes } from "@/lib/data";
+import { getExamData, getExamTermLabel, buildIndexes } from "@/lib/data";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SourceRef } from "@/components/SourceRef";
@@ -132,7 +132,7 @@ async function SessionContent({ params }: { params: Promise<{ gid: string }> }) 
         </div>
       </main>
 
-      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
+      <Footer fetchedAt={data.fetchedAt} termLabel={getExamTermLabel(data)} />
     </>
   );
 }
