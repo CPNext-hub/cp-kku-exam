@@ -1,4 +1,4 @@
-import { htmlViewUrl } from "../lib/sheet-source";
+import { htmlViewUrl, SPREADSHEET_ID } from "../lib/sheet-source";
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -7,7 +7,11 @@ const RE = /items\.push\(\{name:\s*"((?:[^"\\]|\\.)*)"[^}]*?gid:\s*"(\d+)"/g;
 async function syncSheets() {
   const url = htmlViewUrl();
   console.log(`Fetching tabs from ${url}...`);
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    },
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch sheets HTML: ${res.status} ${res.statusText}`);
   }
@@ -27,7 +31,12 @@ async function syncSheets() {
   }
 
   const outPath = resolve(process.cwd(), "lib/sheet-snapshot.json");
-  writeFileSync(outPath, JSON.stringify(found, null, 2) + "\n", "utf-8");
+  const snapshot = {
+    spreadsheetId: SPREADSHEET_ID,
+    capturedAt: new Date().toISOString().slice(0, 10),
+    tabs: found,
+  };
+  writeFileSync(outPath, JSON.stringify(snapshot, null, 2) + "\n", "utf-8");
   console.log(`Saved snapshot to ${outPath}`);
 }
 

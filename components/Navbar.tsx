@@ -2,9 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { SPREADSHEET_ID, htmlViewUrl } from "@/lib/sheet-source";
+import { getAcademicYear, getExamData } from "@/lib/data";
 import { ThemeToggle } from "./ThemeToggle";
 
-export function Navbar() {
+interface NavbarProps {
+  academicYear?: number;
+}
+
+export async function Navbar({ academicYear }: NavbarProps = {}) {
+  const resolvedAcademicYear = academicYear ?? getAcademicYear(await getExamData());
+
   return (
     <header className="sticky top-0 z-30 border-b border-nav-border bg-nav">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
@@ -30,7 +37,7 @@ export function Navbar() {
             <span className="text-[15px] font-semibold tracking-normal leading-tight text-nav-foreground">
               ระบบค้นหาตารางสอบ
             </span>
-            <span className="text-xs text-nav-muted">กลางภาค 1/2569</span>
+            <span className="text-xs text-nav-muted">กลางภาค 1/{resolvedAcademicYear}</span>
           </div>
         </Link>
 

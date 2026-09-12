@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Anuphan, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { getAcademicYear, getExamData } from "@/lib/data";
 import "./globals.css";
 
 const sans = Anuphan({
@@ -17,11 +18,13 @@ const mono = Inter({
   weight: ["400", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "ระบบค้นหาตารางสอบ CP KKU | กลางภาค 1/2569",
-  description:
-    "ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/2569 วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น ค้นหารหัสนักศึกษา รายวิชา ห้องสอบ พร้อมอ้างอิงตรงไปยัง Google Sheets ต้นฉบับ",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const academicYear = getAcademicYear(await getExamData());
+  return {
+    title: `ระบบค้นหาตารางสอบ CP KKU | กลางภาค 1/${academicYear}`,
+    description: `ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/${academicYear} วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น ค้นหารหัสนักศึกษา รายวิชา ห้องสอบ พร้อมอ้างอิงตรงไปยัง Google Sheets ต้นฉบับ`,
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

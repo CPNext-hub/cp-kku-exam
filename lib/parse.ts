@@ -26,25 +26,58 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function parseThaiDate(text: string): { day: number; month: number; year: number } | null {
+  const dateMatch = text.match(/(\d{1,2})[-.\s]+([ก-๙.]+)[-.\s]*(\d{2,4})/);
+  if (!dateMatch) return null;
+
+  const mKey = dateMatch[2].endsWith(".") ? dateMatch[2] : `${dateMatch[2]}.`;
+  const month = THAI_MONTH_MAP[mKey] || THAI_MONTH_MAP[dateMatch[2]];
+  if (!month) return null;
+
+  let year = parseInt(dateMatch[3], 10);
+  if (year < 100) year += 2500;
+  if (year > 2400) year -= 543;
+
+  return { day: parseInt(dateMatch[1], 10), month, year };
+}
+
+function inferFallbackYear(blocks: ExamBlock[], tabName: string): number {
+  const counts = new Map<number, number>();
+  const candidates = [
+    ...blocks.map((block) => parseThaiDate(block.date)?.year ?? null),
+    parseThaiDate(tabName)?.year ?? null,
+  ];
+
+  for (const year of candidates) {
+    if (year !== null) counts.set(year, (counts.get(year) ?? 0) + 1);
+  }
+
+  let fallbackYear = new Date().getFullYear();
+  let highestCount = 0;
+  for (const [year, count] of counts) {
+    if (count > highestCount) {
+      fallbackYear = year;
+      highestCount = count;
+    }
+  }
+  return fallbackYear;
+}
+
 export function parseDateTimeSortKey(
   dateStr: string,
   timeStr: string,
-  tabName: string
+  tabName: string,
+  fallbackYear = new Date().getFullYear()
 ): string {
   let day = 1;
   let month = 8;
-  let year = 2026;
+  let year = fallbackYear;
 
-  const combined = `${dateStr} ${tabName}`;
-  const dateMatch = combined.match(/(\d{1,2})[-.\s]+([ก-๙.]+)[-.\s]+(\d{2,4})/);
-  if (dateMatch) {
-    day = parseInt(dateMatch[1], 10);
-    const mKey = dateMatch[2].endsWith(".") ? dateMatch[2] : `${dateMatch[2]}.`;
-    month = THAI_MONTH_MAP[mKey] || THAI_MONTH_MAP[dateMatch[2]] || 8;
-    let y = parseInt(dateMatch[3], 10);
-    if (y < 100) y += 2500;
-    if (y > 2400) y -= 543;
-    year = y;
+  const parsedDate = parseThaiDate(dateStr) ?? parseThaiDate(tabName);
+  if (parsedDate) {
+    day = parsedDate.day;
+    month = parsedDate.month;
+    year = parsedDate.year;
   }
 
   let hour = 8;
@@ -77,11 +110,6 @@ export function parseSheetBlocks(
 
     if (colA === "ใบรายชื่อผู้เข้าสอบ") {
       if (currentBlock) {
-        currentBlock.sortKey = parseDateTimeSortKey(
-          currentBlock.date,
-          currentBlock.time,
-          tabName
-        );
         blocks.push(currentBlock);
       }
 
@@ -116,11 +144,14 @@ export function parseSheetBlocks(
 
     if (colA === "รายวิชา") {
       currentBlock.courseRaw = colB;
-      const courseMatch = colB.match(/^\s*([A-Z]{2}\d{6})\s*:?\s*(.*)$/);
+      // Accept both the canonical code (SC101009) and codes spaced for display
+      // in the source sheet (SC 101 009), while preserving the raw course name.
+      const courseMatch = colB.match(/^\s*([A-Z]{2}(?:\s*\d){6})\s*:?\s*(.*)$/);
       if (courseMatch) {
-        currentBlock.courseCode = courseMatch[1];
-        currentBlock.courseName = courseMatch[2].trim() || courseMatch[1];
-        currentBlock.courseSlug = courseMatch[1];
+        const normalizedCode = courseMatch[1].replace(/\s+/g, "");
+        currentBlock.courseCode = normalizedCode;
+        currentBlock.courseName = courseMatch[2].trim() || normalizedCode;
+        currentBlock.courseSlug = normalizedCode;
       } else {
         currentBlock.courseCode = colB;
         currentBlock.courseName = colB;
@@ -192,15 +223,11 @@ export function parseSheetBlocks(
   }
 
   if (currentBlock) {
-    currentBlock.sortKey = parseDateTimeSortKey(
-      currentBlock.date,
-      currentBlock.time,
-      tabName
-    );
     blocks.push(currentBlock);
   }
 
   // Fallback for missing date/time (e.g. cancelled blocks)
+  const fallbackYear = inferFallbackYear(blocks, tabName);
   for (const b of blocks) {
     if (!b.date || !b.time) {
       b.date = b.date || tabName;
@@ -213,8 +240,8 @@ export function parseSheetBlocks(
           b.time = tabName;
         }
       }
-      b.sortKey = parseDateTimeSortKey(b.date, b.time, tabName);
     }
+    b.sortKey = parseDateTimeSortKey(b.date, b.time, tabName, fallbackYear);
   }
 
   return blocks;

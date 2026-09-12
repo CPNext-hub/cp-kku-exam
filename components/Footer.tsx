@@ -3,9 +3,10 @@ import { ExternalLink } from "lucide-react";
 
 interface FooterProps {
   fetchedAt?: string;
+  academicYear: number;
 }
 
-export function Footer({ fetchedAt }: FooterProps) {
+export function Footer({ fetchedAt, academicYear }: FooterProps) {
   let formattedTime = "";
   if (fetchedAt) {
     try {
@@ -29,7 +30,7 @@ export function Footer({ fetchedAt }: FooterProps) {
       <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="space-y-1">
           <p className="font-semibold text-foreground text-[15px]">
-            ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/2569
+            ระบบค้นหาตารางสอบกลางภาค ภาคการศึกษา 1/{academicYear}
           </p>
           <p className="text-muted-foreground">
             วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น (CP KKU)

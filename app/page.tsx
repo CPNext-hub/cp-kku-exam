@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getExamData, buildIndexes, searchExam } from "@/lib/data";
+import { getExamData, getAcademicYear, buildIndexes, searchExam } from "@/lib/data";
 import { SearchBox } from "@/components/SearchBox";
 import { SnapshotBanner } from "@/components/SnapshotBanner";
 import { Navbar } from "@/components/Navbar";
@@ -65,7 +65,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
       <section className="w-full bg-background py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-[980px] mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-secondary text-foreground border border-border">
-            <span>ตารางสอบกลางภาค ภาคการศึกษา 1/2569</span>
+            <span>ตารางสอบกลางภาค ภาคการศึกษา 1/{getAcademicYear(data)}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-semibold leading-tight text-foreground">
@@ -165,14 +165,15 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                       {searchResults.students.map((st) => (
                         <Card
                           key={st.studentId}
-                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
                               <div>
+                                {/* stretched link: คลุมทั้งการ์ดให้กดตรงไหนก็เข้าได้ */}
                                 <Link
                                   href={`/student/${st.studentId}`}
-                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {st.studentId}
                                 </Link>
@@ -190,7 +191,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                               <span className="font-num">มีสิทธิ์สอบ {st.examCount} วิชา</span>
                               <Link
                                 href={`/student/${st.studentId}`}
-                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                                className="relative z-10 inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
                               >
                                 <span>ดูตารางสอบ</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
@@ -214,14 +215,15 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                       {searchResults.courses.map((cg) => (
                         <Card
                           key={cg.slug}
-                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
                               <div>
+                                {/* stretched link: คลุมทั้งการ์ด */}
                                 <Link
                                   href={`/course/${cg.slug}`}
-                                  className="text-base font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                  className="text-base font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {cg.code}
                                 </Link>
@@ -236,7 +238,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                               <span className="font-num">{cg.blocks.length} กลุ่ม ({cg.totalSeats} ที่นั่ง)</span>
                               <Link
                                 href={`/course/${cg.slug}`}
-                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                                className="relative z-10 inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
                               >
                                 <span>ดูรายละเอียด</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
@@ -260,14 +262,15 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                       {searchResults.rooms.map((rg) => (
                         <Card
                           key={rg.room}
-                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
                               <div>
+                                {/* stretched link: คลุมทั้งการ์ด */}
                                 <Link
                                   href={`/room/${encodeURIComponent(rg.room)}`}
-                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {rg.room}
                                 </Link>
@@ -282,7 +285,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                             <div className="flex items-center justify-end text-xs border-t border-border pt-3">
                               <Link
                                 href={`/room/${encodeURIComponent(rg.room)}`}
-                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                                className="relative z-10 inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
                               >
                                 <span>ดูตารางห้อง</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
@@ -524,7 +527,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
         </div>
       </section>
 
-      <Footer fetchedAt={data.fetchedAt} />
+      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
     </>
   );
 }

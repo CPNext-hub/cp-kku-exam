@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getExamData, buildIndexes } from "@/lib/data";
+import { getExamData, getAcademicYear, buildIndexes } from "@/lib/data";
+import { hasDateMismatch } from "@/lib/date-mismatch";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SourceRef } from "@/components/SourceRef";
@@ -21,6 +23,13 @@ import { Calendar, Clock, MapPin, ExternalLink } from "lucide-react";
 interface StudentPageProps {
   params: Promise<{ id: string }>;
 }
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function StudentPage({ params }: StudentPageProps) {
   return (
@@ -120,6 +129,7 @@ async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
           <div className="space-y-6">
             {student.exams.map(({ seat, block }) => {
               const isCancelled = block.status === "cancelled";
+              const isMismatch = hasDateMismatch(block.date, block.tabName);
 
               return (
                 <Card
@@ -145,6 +155,14 @@ async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
                           {block.note && (
                             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-secondary text-foreground border border-border">
                               {block.note}
+                            </span>
+                          )}
+                          {isMismatch && (
+                            <span
+                              className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border"
+                              title={`ข้อมูลวันที่ใน Sheet (${block.date}) ไม่ตรงกับรอบสอบ (${block.tabName})`}
+                            >
+                              ⚠️ วันที่ต้นทางไม่ตรงกับรอบสอบ
                             </span>
                           )}
                         </div>
@@ -213,6 +231,16 @@ async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
                         <p className="text-base font-semibold text-foreground mt-2">
                           {block.date}
                         </p>
+                        {isMismatch && (
+                          <div className="mt-2 text-xs text-muted-foreground bg-background p-2.5 rounded-[11px] border border-border text-left">
+                            <p className="font-semibold text-foreground">
+                              ⚠️ วันที่ต้นทางไม่ตรงกับรอบสอบ
+                            </p>
+                            <p className="mt-0.5">
+                              ใน Sheet ระบุ &ldquo;{block.date}&rdquo; แต่วิชานี้อยู่ในรอบ &ldquo;{block.tabName}&rdquo; แนะนำให้ยึดวันตามรอบสอบและตรวจสอบที่ Sheet
+                            </p>
+                          </div>
+                        )}
                         <div className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground mt-1 font-num">
                           <Clock className="w-3.5 h-3.5" />
                           <span>{block.time}</span>
@@ -241,7 +269,7 @@ async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </main>
 
-      <Footer fetchedAt={data.fetchedAt} />
+      <Footer fetchedAt={data.fetchedAt} academicYear={getAcademicYear(data)} />
     </>
   );
 }

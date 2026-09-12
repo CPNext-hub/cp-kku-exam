@@ -3,6 +3,12 @@ export interface SheetRef {
   tab: string;
 }
 
+export interface SheetSnapshot {
+  spreadsheetId: string;
+  capturedAt: string;
+  tabs: SheetRef[];
+}
+
 export interface SourceRefData {
   gid: string;
   tab: string;

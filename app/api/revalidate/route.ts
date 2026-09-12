@@ -7,14 +7,18 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const bearerToken = authHeader?.replace(/^Bearer\s+/i, "");
 
-  // If REVALIDATE_SECRET is configured, enforce matching token
-  if (secret) {
-    if (headerSecret !== secret && bearerToken !== secret) {
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid or missing secret token" },
-        { status: 401 }
-      );
-    }
+  if (!secret) {
+    return NextResponse.json(
+      { error: "REVALIDATE_SECRET is not configured" },
+      { status: 503 }
+    );
+  }
+
+  if (headerSecret !== secret && bearerToken !== secret) {
+    return NextResponse.json(
+      { error: "Unauthorized: Invalid or missing secret token" },
+      { status: 401 }
+    );
   }
 
   try {

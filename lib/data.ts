@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { discoverSheets } from "./discover";
 import { parseCsv } from "./csv";
 import { parseSheetBlocks } from "./parse";
-import { csvUrl } from "./sheet-source";
+import { csvUrl, SPREADSHEET_ID } from "./sheet-source";
 import snapshotTabs from "./sheet-snapshot.json";
 import type {
   CourseGroup,
@@ -13,6 +13,7 @@ import type {
   Seat,
   SessionGroup,
   SheetRef,
+  SheetSnapshot,
   StudentSchedule,
 } from "./types";
 
@@ -32,7 +33,16 @@ export async function getExamData(): Promise<ExamDataset> {
     sheets = await discoverSheets();
   } catch (err) {
     console.warn("discoverSheets failed, falling back to snapshot:", err);
-    sheets = snapshotTabs as SheetRef[];
+    const snapshot = snapshotTabs as SheetSnapshot;
+    if (snapshot.spreadsheetId !== SPREADSHEET_ID) {
+      throw new Error(
+        "ค้นแท็บไม่สำเร็จ และ snapshot สำรองเป็นของ Sheet คนละไฟล์ ใช้แทนกันไม่ได้"
+      );
+    }
+    if (!Array.isArray(snapshot.tabs) || snapshot.tabs.length === 0) {
+      throw new Error("ไม่พบรายชื่อแท็บใน snapshot สำรอง");
+    }
+    sheets = snapshot.tabs;
     usedSnapshot = true;
   }
 
@@ -80,12 +90,53 @@ export async function getExamData(): Promise<ExamDataset> {
   };
 }
 
+/**
+ * Returns the Buddhist academic year represented by the majority of block
+ * dates. The parser stores sort keys with Gregorian years, so this keeps the
+ * visible term label in sync when the configured Sheet changes.
+ */
+export function getAcademicYear(
+  dataset: Pick<ExamDataset, "blocks" | "fetchedAt">
+): number {
+  const yearCounts = new Map<number, number>();
+
+  for (const block of dataset.blocks) {
+    const match = block.sortKey.match(/^(\d{4})-/);
+    if (!match) continue;
+
+    const year = Number(match[1]);
+    if (year >= 1900 && year <= 2200) {
+      yearCounts.set(year, (yearCounts.get(year) ?? 0) + 1);
+    }
+  }
+
+  let gregorianYear: number | undefined;
+  let mostCommonCount = 0;
+  for (const [year, count] of yearCounts) {
+    if (count > mostCommonCount) {
+      gregorianYear = year;
+      mostCommonCount = count;
+    }
+  }
+
+  if (!gregorianYear) {
+    const fetchedYear = Number(dataset.fetchedAt.slice(0, 4));
+    if (!Number.isInteger(fetchedYear) || fetchedYear < 1900) {
+      throw new Error("ไม่พบปีการศึกษาในข้อมูล Sheet");
+    }
+    gregorianYear = fetchedYear;
+  }
+
+  return gregorianYear + 543;
+}
+
 export interface ExamIndexes {
   byStudent: Map<string, StudentSchedule>;
   byCourse: Map<string, CourseGroup>;
   byRoom: Map<string, RoomSchedule>;
   bySession: Map<string, SessionGroup>;
   byMajor: Map<string, { major: string; count: number; studentIds: Set<string> }>;
+  byBlock: Map<string, ExamBlock>;
   summary: ExamSummary;
 }
 
@@ -99,6 +150,7 @@ export function buildIndexes(dataset: ExamDataset): ExamIndexes {
   const byRoom = new Map<string, RoomSchedule>();
   const bySession = new Map<string, SessionGroup>();
   const byMajor = new Map<string, { major: string; count: number; studentIds: Set<string> }>();
+  const byBlock = new Map<string, ExamBlock>();
 
   const uniqueRooms = new Set<string>();
   const uniqueStudents = new Set<string>();
@@ -116,6 +168,8 @@ export function buildIndexes(dataset: ExamDataset): ExamIndexes {
   }
 
   for (const block of dataset.blocks) {
+    byBlock.set(block.id, block);
+
     // Unique course
     if (block.courseCode) uniqueCourses.add(block.courseCode);
 
@@ -240,6 +294,7 @@ export function buildIndexes(dataset: ExamDataset): ExamIndexes {
     byRoom,
     bySession,
     byMajor,
+    byBlock,
     summary,
   };
 }
