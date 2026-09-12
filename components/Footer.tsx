@@ -32,6 +32,18 @@ export function Footer({ fetchedAt, termLabel }: FooterProps) {
           <p className="font-semibold text-foreground text-[15px]">
             ระบบค้นหาตารางสอบ{termLabel}
           </p>
+          <p className="text-muted-foreground">
+            จัดทำโดย{" "}
+            <a
+              href="https://github.com/CPNext-hub"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-foreground hover:text-primary hover:underline"
+            >
+              CPNext Community
+            </a>{" "}
+            ภายใต้ชมรม CP HUB
+          </p>
           {formattedTime && (
             <p className="text-xs text-muted-foreground font-num">
               ข้อมูลซิงค์ล่าสุด: {formattedTime}
