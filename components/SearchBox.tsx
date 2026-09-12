@@ -40,7 +40,7 @@ export function SearchBox({
             name="q"
             defaultValue={initialQuery}
             autoFocus={autoFocus}
-            inputMode="numeric"
+            inputMode="text"
             enterKeyHint="search"
             placeholder="พิมพ์รหัสนักศึกษา เช่น 683380531-4"
             aria-label="ค้นหารหัสนักศึกษา รายวิชา ห้องสอบ หรือสาขาวิชา"

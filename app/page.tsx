@@ -67,7 +67,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
       {/* Hero Section (Canvas: bg-background) */}
       {searchResults ? (
         /* โหมดค้นหาแล้ว: ย่อ hero เหลือแถบค้นหาแถวเดียว เพื่อดันผลลัพธ์ขึ้นมาให้เห็นทันทีโดยไม่ต้องเลื่อน */
-        <section className="w-full bg-background border-b border-border py-4 px-4 sm:px-6">
+        <section className="w-full bg-background border-b border-border py-4 px-4 sm:px-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300">
           <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
             <SearchBox initialQuery={q} compact />
             <p className="text-xs text-muted-foreground sm:ml-auto">
@@ -101,15 +101,15 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
 
       {/* If searching, render Search Results Section */}
       {searchResults ? (
-        <section className="w-full bg-secondary py-12 px-4 sm:px-6">
+        <section className="w-full bg-secondary py-8 sm:py-12 px-4 sm:px-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <div className="max-w-[1440px] mx-auto space-y-8">
-            <div className="max-w-[980px] mx-auto flex items-center justify-between border-b border-border pb-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
-                ผลการค้นหาสำหรับ &ldquo;<span className="text-primary font-num">{q}</span>&rdquo;
+            <div className="max-w-[980px] mx-auto flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
+              <h2 className="min-w-0 max-w-full text-lg sm:text-2xl leading-snug font-semibold text-foreground break-words">
+                ผลการค้นหาสำหรับ &ldquo;<span className="text-primary font-num break-all">{q}</span>&rdquo;
               </h2>
               <Link
                 href="/"
-                className="text-sm font-semibold text-primary hover:underline"
+                className="shrink-0 text-sm font-semibold text-primary hover:underline"
               >
                 ล้างการค้นหา
               </Link>
@@ -142,29 +142,29 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                 }
                 className="w-full space-y-6"
               >
-                <div className="flex justify-center">
-                  <TabsList className="bg-background border border-border p-1 rounded-full h-auto">
+                <div className="w-full overflow-x-auto pb-1 sm:flex sm:justify-center">
+                  <TabsList className="grid w-full grid-cols-2 sm:inline-flex sm:w-fit bg-background border border-border p-1 rounded-xl sm:rounded-full h-auto">
                     <TabsTrigger
                       value="students"
-                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="min-w-0 rounded-full px-2 py-2 text-xs leading-tight sm:px-4 sm:py-1.5 sm:text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       นักศึกษา ({searchResults.students.length})
                     </TabsTrigger>
                     <TabsTrigger
                       value="courses"
-                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="min-w-0 rounded-full px-2 py-2 text-xs leading-tight sm:px-4 sm:py-1.5 sm:text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       รายวิชา ({searchResults.courses.length})
                     </TabsTrigger>
                     <TabsTrigger
                       value="rooms"
-                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="min-w-0 rounded-full px-2 py-2 text-xs leading-tight sm:px-4 sm:py-1.5 sm:text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       ห้องสอบ ({searchResults.rooms.length})
                     </TabsTrigger>
                     <TabsTrigger
                       value="majors"
-                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="min-w-0 rounded-full px-2 py-2 text-xs leading-tight sm:px-4 sm:py-1.5 sm:text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       สาขาวิชา ({searchResults.majors.length})
                     </TabsTrigger>
@@ -172,25 +172,25 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                 </div>
 
                 {/* Tab: Students */}
-                <TabsContent value="students" className="space-y-4">
+                <TabsContent value="students" className="space-y-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300">
                   {searchResults.students.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
                       ไม่พบข้อมูลนักศึกษาที่ตรงกับคำค้นหา
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                       {searchResults.students.map((st) => (
                         <Card
                           key={st.studentId}
-                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
+                          className="relative cursor-pointer hover:-translate-y-0.5 hover:border-primary transition-[border-color,transform] duration-200 border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
+                              <div className="min-w-0">
                                 {/* stretched link: คลุมทั้งการ์ดให้กดตรงไหนก็เข้าได้ */}
                                 <Link
                                   href={`/student/${st.studentId}`}
-                                  className="text-2xl sm:text-3xl font-semibold font-num whitespace-nowrap text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
+                                  className="text-xl sm:text-3xl font-semibold font-num break-all sm:whitespace-nowrap text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {st.studentId}
                                 </Link>
@@ -222,25 +222,25 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                 </TabsContent>
 
                 {/* Tab: Courses */}
-                <TabsContent value="courses" className="space-y-4">
+                <TabsContent value="courses" className="space-y-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300">
                   {searchResults.courses.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
                       ไม่พบข้อมูลรายวิชาที่ตรงกับคำค้นหา
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                       {searchResults.courses.map((cg) => (
                         <Card
                           key={cg.slug}
-                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
+                          className="relative cursor-pointer hover:-translate-y-0.5 hover:border-primary transition-[border-color,transform] duration-200 border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
+                              <div className="min-w-0">
                                 {/* stretched link: คลุมทั้งการ์ด */}
                                 <Link
                                   href={`/course/${cg.slug}`}
-                                  className="text-base font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
+                                  className="text-base font-semibold font-num break-all text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {cg.code}
                                 </Link>
@@ -269,25 +269,25 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                 </TabsContent>
 
                 {/* Tab: Rooms */}
-                <TabsContent value="rooms" className="space-y-4">
+                <TabsContent value="rooms" className="space-y-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300">
                   {searchResults.rooms.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
                       ไม่พบข้อมูลห้องสอบที่ตรงกับคำค้นหา
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                       {searchResults.rooms.map((rg) => (
                         <Card
                           key={rg.room}
-                          className="relative cursor-pointer hover:border-primary transition-colors border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
+                          className="relative cursor-pointer hover:-translate-y-0.5 hover:border-primary transition-[border-color,transform] duration-200 border-border bg-card shadow-none has-[a:focus-visible]:outline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-ring"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
+                              <div className="min-w-0">
                                 {/* stretched link: คลุมทั้งการ์ด */}
                                 <Link
                                   href={`/room/${encodeURIComponent(rg.room)}`}
-                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
+                                  className="text-lg font-semibold font-num break-all text-foreground hover:text-primary transition-colors after:absolute after:inset-0 after:content-['']"
                                 >
                                   {rg.room}
                                 </Link>
@@ -316,7 +316,7 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                 </TabsContent>
 
                 {/* Tab: Majors */}
-                <TabsContent value="majors" className="space-y-4">
+                <TabsContent value="majors" className="space-y-4 data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-bottom-1 data-[state=active]:duration-300">
                   {searchResults.majors.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
                       ไม่พบข้อมูลสาขาวิชาที่ตรงกับคำค้นหา
@@ -326,11 +326,11 @@ async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: st
                       {searchResults.majors.map((m) => (
                         <Card
                           key={m.major}
-                          className="border-border bg-card shadow-none"
+                          className="border-border bg-card shadow-none transition-colors duration-200 hover:border-primary"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-base font-semibold font-num text-foreground">
+                              <span className="min-w-0 break-all text-base font-semibold font-num text-foreground">
                                 {m.major}
                               </span>
                               <Badge variant="secondary" className="rounded-full text-xs font-num">
