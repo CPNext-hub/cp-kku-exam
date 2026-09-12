@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+
 interface StatusBadgeProps {
   status: "normal" | "cancelled";
   className?: string;
@@ -6,39 +8,45 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
   if (status === "cancelled") {
     return (
-      <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-950/70 dark:text-red-300 border border-red-200 dark:border-red-900 ${className}`}
+      <Badge
+        variant="destructive"
+        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${className}`}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
         ยกเลิกการสอบ
-      </span>
+      </Badge>
     );
   }
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 ${className}`}
+    <Badge
+      variant="secondary"
+      className={`rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground ${className}`}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
       จัดสอบปกติ
-    </span>
+    </Badge>
   );
 }
 
-export function SecBadge({ sec }: { sec: string }) {
+export function SecBadge({ sec, className = "" }: { sec: string; className?: string }) {
   if (!sec) return null;
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+    <Badge
+      variant="outline"
+      className={`rounded-full px-2 py-0.5 text-xs font-num font-medium text-foreground ${className}`}
+    >
       {sec}
-    </span>
+    </Badge>
   );
 }
 
-export function MajorBadge({ major }: { major: string }) {
+export function MajorBadge({ major, className = "" }: { major: string; className?: string }) {
   if (!major) return null;
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
+    <Badge
+      variant="secondary"
+      className={`rounded-full px-2 py-0.5 text-xs font-num font-medium text-foreground ${className}`}
+    >
       {major}
-    </span>
+    </Badge>
   );
 }

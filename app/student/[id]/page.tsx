@@ -6,10 +6,25 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SourceRef } from "@/components/SourceRef";
 import { StatusBadge, SecBadge, MajorBadge } from "@/components/Badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Calendar, Clock, MapPin, ExternalLink } from "lucide-react";
 
-export default function StudentPage({ params }: PageProps<"/student/[id]">) {
+interface StudentPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function StudentPage({ params }: StudentPageProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
       <Suspense fallback={<StudentSkeleton />}>
         <StudentContent params={params} />
@@ -18,7 +33,7 @@ export default function StudentPage({ params }: PageProps<"/student/[id]">) {
   );
 }
 
-async function StudentContent({ params }: Pick<PageProps<"/student/[id]">, "params">) {
+async function StudentContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const decodedId = decodeURIComponent(id).trim();
 
@@ -32,179 +47,194 @@ async function StudentContent({ params }: Pick<PageProps<"/student/[id]">, "para
 
   return (
     <>
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-6 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>กลับหน้าหลัก</span>
-          </Link>
-          <span className="text-xs text-zinc-400 font-mono">
+      <main className="flex-1 w-full max-w-[980px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+        {/* Breadcrumb navigation */}
+        <div className="flex items-center justify-between">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/" className="text-sm font-semibold text-primary hover:underline">
+                  หน้าหลัก
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-sm text-muted-foreground font-num">
+                  {student.studentId}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <span className="text-xs text-muted-foreground font-num">
             {student.exams.length} วิชาที่สอบ
           </span>
         </div>
 
-        {/* Student Profile Card */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-xs uppercase font-bold tracking-wider text-zinc-400">
-                  ตารางสอบนักศึกษา
-                </span>
-                {student.major && <MajorBadge major={student.major} />}
+        {/* Student Profile Card (Hairline border, NO shadow) */}
+        <Card className="border-border bg-card shadow-none">
+          <CardHeader className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs uppercase font-semibold text-muted-foreground">
+                    ตารางสอบนักศึกษา
+                  </span>
+                  {student.major && <MajorBadge major={student.major} />}
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-semibold font-num text-foreground mt-1">
+                  {student.studentId}
+                </h1>
+                {student.name ? (
+                  <p className="text-base font-semibold text-foreground mt-1">
+                    {student.name}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    (ไม่มีการระบุชื่อ-สกุลในไฟล์ประกาศ ให้ยึดรหัสนักศึกษาเป็นหลัก)
+                  </p>
+                )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-1">
-                {student.studentId}
-              </h1>
-              {student.name ? (
-                <p className="text-base font-semibold text-zinc-700 dark:text-zinc-300 mt-1">
-                  {student.name}
-                </p>
-              ) : (
-                <p className="text-xs text-zinc-400 mt-1">
-                  (ไม่มีการระบุชื่อ-สกุลในไฟล์ประกาศ ให้ยึดรหัสนักศึกษาเป็นหลัก)
-                </p>
-              )}
-            </div>
 
-            <div className="text-left sm:text-right">
-              <span className="text-xs text-zinc-500">สอบทั้งหมด</span>
-              <p className="text-3xl font-black text-red-600 dark:text-red-400">
-                {student.exams.length}{" "}
-                <span className="text-sm font-normal text-zinc-500">วิชา</span>
-              </p>
+              <div className="text-left sm:text-right">
+                <span className="text-xs text-muted-foreground">จำนวนวิชาสอบทั้งหมด</span>
+                <p className="text-3xl font-semibold font-num text-foreground">
+                  {student.exams.length}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">วิชา</span>
+                </p>
+              </div>
             </div>
+          </CardHeader>
+        </Card>
+
+        {/* Exam Schedule List */}
+        <div className="space-y-6">
+          <div className="border-b border-border pb-3">
+            <h2 className="text-xl font-semibold text-foreground">
+              กำหนดการสอบเรียงตามวันและเวลา
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              ตรวจสอบเลขที่นั่งสอบ ห้องสอบ และเวลาก่อนเข้าห้องสอบ
+            </p>
           </div>
-        </div>
 
-        {/* Exam Cards */}
-        <div className="space-y-4">
-          <h2 className="text-base font-bold text-zinc-800 dark:text-zinc-200">
-            กำหนดการสอบเรียงตามวันและเวลา
-          </h2>
-
-          <div className="space-y-4">
+          <div className="space-y-6">
             {student.exams.map(({ seat, block }) => {
               const isCancelled = block.status === "cancelled";
 
               return (
-                <div
+                <Card
                   key={block.id}
-                  className={`p-5 rounded-2xl border transition-all ${
+                  className={`border transition-colors shadow-none ${
                     isCancelled
-                      ? "bg-red-50/40 dark:bg-red-950/20 border-red-200 dark:border-red-900/60"
-                      : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md"
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-border bg-card"
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-3.5">
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          href={`/course/${block.courseSlug}`}
-                          className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          {block.courseCode}
-                        </Link>
-                        <SecBadge sec={block.sec} />
-                        <StatusBadge status={block.status} />
-                        {block.note && (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                            {block.note}
-                          </span>
+                  <CardHeader className="p-6 pb-4 border-b border-border">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/course/${block.courseSlug}`}
+                            className="font-num text-base font-semibold text-primary hover:underline"
+                          >
+                            {block.courseCode}
+                          </Link>
+                          <SecBadge sec={block.sec} />
+                          <StatusBadge status={block.status} />
+                          {block.note && (
+                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-secondary text-foreground border border-border">
+                              {block.note}
+                            </span>
+                          )}
+                        </div>
+                        <CardTitle className="text-lg font-semibold text-foreground mt-1.5">
+                          {block.courseName}
+                        </CardTitle>
+                        {block.program && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {block.program}
+                          </p>
                         )}
                       </div>
-                      <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-                        {block.courseName}
-                      </h3>
-                      {block.program && (
-                        <p className="text-xs text-zinc-500 mt-0.5">{block.program}</p>
-                      )}
-                    </div>
 
-                    <div className="shrink-0 flex items-center gap-2">
-                      <SourceRef source={seat.source} />
+                      <div className="shrink-0">
+                        <SourceRef source={seat.source} />
+                      </div>
                     </div>
-                  </div>
+                  </CardHeader>
 
-                  {/* Highlights: Seat, Room, Date & Time */}
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Seat Number */}
-                    <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
-                      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        เลขที่นั่งสอบ
-                      </span>
-                      <p className="text-3xl font-black font-mono text-red-600 dark:text-red-400 mt-0.5">
-                        {seat.seat || "-"}
-                      </p>
-                      <span className="text-[11px] text-zinc-400">
-                        ลำดับที่ {seat.no}
-                      </span>
-                    </div>
-
-                    {/* Room */}
-                    <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
-                      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        ห้องสอบ
-                      </span>
-                      {isCancelled ? (
-                        <p className="text-lg font-bold text-red-600 dark:text-red-400 mt-1">
-                          ยกเลิกการสอบ
+                  <CardContent className="p-6 pt-4">
+                    {/* The 3 info columns */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      {/* 1. Seat Number: Product Imagery! EXACTLY ONE DROP SHADOW IN THE ENTIRE SYSTEM */}
+                      <div className="p-6 rounded-[18px] bg-background border border-border seat-card-shadow text-center flex flex-col justify-center items-center">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          เลขที่นั่งสอบ
+                        </span>
+                        {/* Seat token: 44-56px, weight 700, line-height 1.0, tracking: -0.02em */}
+                        <p className="text-5xl font-bold font-num text-foreground tracking-tight leading-none my-2">
+                          {seat.seat || "-"}
                         </p>
-                      ) : (
-                        <Link
-                          href={`/room/${encodeURIComponent(block.room)}`}
-                          className="block text-2xl font-black font-mono text-zinc-900 dark:text-zinc-100 hover:text-blue-600 transition-colors mt-0.5"
-                        >
-                          {block.room}
-                        </Link>
-                      )}
-                      <span className="text-[11px] text-zinc-400">
-                        {isCancelled ? "วิชานี้ไม่มีการจัดสอบ" : "คลิกเพื่อดูห้อง"}
-                      </span>
+                        <span className="text-xs text-muted-foreground font-num">
+                          ลำดับที่ {seat.no}
+                        </span>
+                      </div>
+
+                      {/* 2. Room (Hairline border, NO shadow) */}
+                      <div className="p-6 rounded-[18px] bg-secondary border border-border text-center flex flex-col justify-center items-center">
+                        <div className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span>ห้องสอบ</span>
+                        </div>
+                        {isCancelled || block.room === "—" ? (
+                          <p className="text-4xl font-bold font-num text-muted-foreground mt-2">
+                            —
+                          </p>
+                        ) : (
+                          <Link
+                            href={`/room/${encodeURIComponent(block.room)}`}
+                            className="text-2xl font-bold font-num text-foreground hover:text-primary transition-colors mt-2"
+                          >
+                            {block.room}
+                          </Link>
+                        )}
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {isCancelled ? "วิชานี้ไม่มีการจัดสอบ" : "คลิกเพื่อดูตารางห้อง"}
+                        </span>
+                      </div>
+
+                      {/* 3. Date & Time (Hairline border, NO shadow) */}
+                      <div className="p-6 rounded-[18px] bg-secondary border border-border text-center flex flex-col justify-center items-center">
+                        <div className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span>วันและเวลาสอบ</span>
+                        </div>
+                        <p className="text-base font-semibold text-foreground mt-2">
+                          {block.date}
+                        </p>
+                        <div className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground mt-1 font-num">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{block.time}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Date & Time */}
-                    <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
-                      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        วันและเวลาสอบ
+                    {/* Session permalink */}
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
+                      <Link
+                        href={`/session/${block.gid}`}
+                        className="text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1 font-semibold"
+                      >
+                        <span>รอบสอบ: {block.tabName}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                      <span className="font-num text-muted-foreground">
+                        บรรทัดที่ {seat.row} ใน Sheet
                       </span>
-                      <p className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-                        {block.date}
-                      </p>
-                      <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 mt-0.5">
-                        {block.time}
-                      </p>
                     </div>
-                  </div>
-
-                  {/* Session permalink */}
-                  <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800/60">
-                    <Link
-                      href={`/session/${block.gid}`}
-                      className="hover:underline hover:text-zinc-800 dark:hover:text-zinc-200"
-                    >
-                      รอบสอบ: {block.tabName}
-                    </Link>
-                    <span className="text-[11px] font-mono text-zinc-400">
-                      แถว {seat.row}
-                    </span>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -218,11 +248,11 @@ async function StudentContent({ params }: Pick<PageProps<"/student/[id]">, "para
 
 function StudentSkeleton() {
   return (
-    <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 animate-pulse space-y-6">
-      <div className="h-6 w-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
-      <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-      <div className="h-48 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-      <div className="h-48 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
+    <main className="flex-1 w-full max-w-[980px] mx-auto px-4 sm:px-6 py-12 space-y-6 animate-pulse">
+      <Skeleton className="h-5 w-32 rounded-full" />
+      <Skeleton className="h-32 w-full rounded-[18px]" />
+      <Skeleton className="h-56 w-full rounded-[18px]" />
+      <Skeleton className="h-56 w-full rounded-[18px]" />
     </main>
   );
 }

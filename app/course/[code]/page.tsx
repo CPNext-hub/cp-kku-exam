@@ -6,10 +6,32 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SourceRef } from "@/components/SourceRef";
 import { StatusBadge, SecBadge, MajorBadge } from "@/components/Badge";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-export default function CoursePage({ params }: PageProps<"/course/[code]">) {
+interface CoursePageProps {
+  params: Promise<{ code: string }>;
+}
+
+export default function CoursePage({ params }: CoursePageProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
       <Suspense fallback={<CourseSkeleton />}>
         <CourseContent params={params} />
@@ -18,7 +40,7 @@ export default function CoursePage({ params }: PageProps<"/course/[code]">) {
   );
 }
 
-async function CourseContent({ params }: Pick<PageProps<"/course/[code]">, "params">) {
+async function CourseContent({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const decodedCode = decodeURIComponent(code).trim().toLowerCase();
 
@@ -45,178 +67,241 @@ async function CourseContent({ params }: Pick<PageProps<"/course/[code]">, "para
 
   return (
     <>
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>กลับหน้าหลัก</span>
-          </Link>
-          <span className="text-xs text-zinc-400 font-mono">
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+        {/* Breadcrumb navigation */}
+        <div className="flex items-center justify-between">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/" className="text-sm font-semibold text-primary hover:underline">
+                  หน้าหลัก
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-sm text-muted-foreground font-num">
+                  {courseGroup.code}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <span className="text-xs text-muted-foreground font-num">
             {courseGroup.blocks.length} กลุ่มสอบ/ห้องสอบ
           </span>
         </div>
 
         {/* Course Header Card */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-xs uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">
-                ข้อมูลรายวิชา
-              </span>
-              <div className="flex items-baseline gap-3 mt-1">
-                <h1 className="text-2xl sm:text-3xl font-mono font-black text-zinc-900 dark:text-zinc-100">
-                  {courseGroup.code}
-                </h1>
+        <Card className="border-border bg-card shadow-none">
+          <CardHeader className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs uppercase font-semibold text-muted-foreground">
+                  ข้อมูลรายวิชา
+                </span>
+                <div className="flex items-baseline gap-3 mt-1">
+                  <h1 className="text-2xl sm:text-3xl font-semibold font-num text-foreground">
+                    {courseGroup.code}
+                  </h1>
+                </div>
+                <p className="text-lg font-semibold text-foreground mt-1">
+                  {courseGroup.name}
+                </p>
               </div>
-              <p className="text-lg font-bold text-zinc-700 dark:text-zinc-300 mt-1">
-                {courseGroup.name}
-              </p>
-            </div>
 
-            <div className="text-left sm:text-right">
-              <span className="text-xs text-zinc-500">จำนวนที่นั่งสอบรวม</span>
-              <p className="text-3xl font-black text-blue-600 dark:text-blue-400">
-                {courseGroup.totalSeats.toLocaleString()}{" "}
-                <span className="text-sm font-normal text-zinc-500">ที่นั่ง</span>
-              </p>
+              <div className="text-left sm:text-right">
+                <span className="text-xs text-muted-foreground">จำนวนที่นั่งสอบรวม</span>
+                <p className="text-3xl font-semibold font-num text-foreground">
+                  {courseGroup.totalSeats.toLocaleString()}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">ที่นั่ง</span>
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardHeader>
+        </Card>
 
-        {/* Exam Blocks */}
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-              กลุ่มสอบและห้องสอบ ({courseGroup.blocks.length} บล็อก)
+        {/* Exam Blocks Overview Table */}
+        <div className="space-y-4">
+          <div className="border-b border-border pb-3">
+            <h2 className="text-xl font-semibold text-foreground">
+              รายการกลุ่มสอบทั้งหมดในรายวิชานี้ ({courseGroup.blocks.length} บล็อก)
             </h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              แสดงแยกแต่ละกลุ่มสอบและห้องสอบตามเอกสารประกาศจริง (ไม่ยุบรวม)
+            <p className="text-xs text-muted-foreground mt-1">
+              แสดงแยกกลุ่มและห้องสอบตามประกาศจริง
             </p>
           </div>
 
+          <div className="overflow-x-auto rounded-[11px] border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="w-[90px]">กลุ่ม (SEC)</TableHead>
+                  <TableHead>ห้องสอบ</TableHead>
+                  <TableHead>วันและเวลาสอบ</TableHead>
+                  <TableHead>รอบสอบ (Session)</TableHead>
+                  <TableHead className="text-right">จำนวนที่นั่ง</TableHead>
+                  <TableHead>สถานะ</TableHead>
+                  <TableHead className="text-right">ที่มา</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {courseGroup.blocks.map((block) => (
+                  <TableRow key={block.id} className="border-border">
+                    <TableCell>
+                      <SecBadge sec={block.sec} />
+                    </TableCell>
+                    <TableCell>
+                      {block.status === "cancelled" || block.room === "—" ? (
+                        <span className="text-muted-foreground font-num">—</span>
+                      ) : (
+                        <Link
+                          href={`/room/${encodeURIComponent(block.room)}`}
+                          className="font-num font-semibold text-primary hover:underline"
+                        >
+                          {block.room}
+                        </Link>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-foreground block">{block.date}</span>
+                      <span className="text-xs text-muted-foreground font-num block">{block.time}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/session/${block.gid}`}
+                        className="text-xs font-medium text-foreground hover:text-primary transition-colors"
+                      >
+                        {block.tabName}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-right font-num font-semibold">
+                      {block.seats.length}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={block.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <SourceRef source={block.source} compact />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Detailed Block List with Seat Tables */}
+        <div className="space-y-6 pt-4">
+          <h2 className="text-xl font-semibold text-foreground">
+            รายชื่อผู้เข้าสอบในแต่ละกลุ่ม
+          </h2>
+
           <div className="space-y-6">
-            {courseGroup.blocks.map((block, index) => {
+            {courseGroup.blocks.map((block) => {
               const isCancelled = block.status === "cancelled";
 
               return (
-                <div
+                <Card
                   key={block.id}
-                  className={`rounded-2xl border overflow-hidden transition-all ${
+                  className={`border shadow-none ${
                     isCancelled
-                      ? "bg-red-50/30 dark:bg-red-950/20 border-red-200 dark:border-red-900/60"
-                      : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm"
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-border bg-card"
                   }`}
                 >
-                  {/* Block Header */}
-                  <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-zinc-400">
-                          บล็อกที่ {index + 1}
-                        </span>
-                        <SecBadge sec={block.sec} />
-                        <StatusBadge status={block.status} />
-                        {block.program && (
-                          <span className="text-xs text-zinc-500 px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">
-                            {block.program}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 text-sm pt-1">
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                          ห้อง:{" "}
-                          {isCancelled ? (
-                            <span className="text-red-600 font-bold">ยกเลิกการสอบ</span>
-                          ) : (
-                            <Link
-                              href={`/room/${encodeURIComponent(block.room)}`}
-                              className="text-blue-600 dark:text-blue-400 hover:underline font-mono font-bold"
-                            >
-                              {block.room}
-                            </Link>
+                  <CardHeader className="p-6 pb-4 border-b border-border">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <SecBadge sec={block.sec} />
+                          <StatusBadge status={block.status} />
+                          {block.program && (
+                            <span className="text-xs text-muted-foreground">
+                              {block.program}
+                            </span>
                           )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-foreground pt-1">
+                          <span>
+                            ห้องสอบ:{" "}
+                            {isCancelled || block.room === "—" ? (
+                              <span className="text-muted-foreground font-num">—</span>
+                            ) : (
+                              <Link
+                                href={`/room/${encodeURIComponent(block.room)}`}
+                                className="font-num font-semibold text-primary hover:underline"
+                              >
+                                {block.room}
+                              </Link>
+                            )}
+                          </span>
+                          <span>•</span>
+                          <span>วันสอบ: {block.date}</span>
+                          <span>•</span>
+                          <span className="font-num">เวลา: {block.time}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-num text-muted-foreground">
+                          {block.seats.length} คน
                         </span>
-                        <span>·</span>
-                        <Link
-                          href={`/session/${block.gid}`}
-                          className="text-zinc-600 dark:text-zinc-400 hover:underline"
-                        >
-                          {block.date} ({block.time})
-                        </Link>
+                        <SourceRef source={block.source} />
                       </div>
                     </div>
+                  </CardHeader>
 
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-zinc-500">
-                        {block.seats.length} คน
-                      </span>
-                      <SourceRef source={block.source} />
-                    </div>
-                  </div>
-
-                  {/* Student Seats Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 font-semibold">
-                        <tr>
-                          <th className="py-2.5 px-4 w-12 text-center">ลำดับ</th>
-                          <th className="py-2.5 px-4">รหัสนักศึกษา</th>
-                          <th className="py-2.5 px-4">ชื่อ - สกุล</th>
-                          <th className="py-2.5 px-4">สาขาวิชา</th>
-                          <th className="py-2.5 px-4 text-center">เลขที่นั่ง</th>
-                          <th className="py-2.5 px-4 text-right">ที่มา</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 font-mono">
-                        {block.seats.map((seat) => (
-                          <tr
-                            key={`${seat.studentId}-${seat.row}`}
-                            className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
-                          >
-                            <td className="py-2 px-4 text-center text-zinc-400 font-sans">
-                              {seat.no}
-                            </td>
-                            <td className="py-2 px-4 font-bold text-zinc-900 dark:text-zinc-100">
-                              <Link
-                                href={`/student/${seat.studentId}`}
-                                className="hover:text-red-600 dark:hover:text-red-400 hover:underline"
-                              >
-                                {seat.studentId}
-                              </Link>
-                            </td>
-                            <td className="py-2 px-4 font-sans text-zinc-700 dark:text-zinc-300">
-                              {seat.name || "-"}
-                            </td>
-                            <td className="py-2 px-4 font-sans">
-                              <MajorBadge major={seat.major} />
-                            </td>
-                            <td className="py-2 px-4 text-center font-bold text-red-600 dark:text-red-400">
-                              {seat.seat || "-"}
-                            </td>
-                            <td className="py-2 px-4 text-right">
-                              <SourceRef source={seat.source} compact />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                  <CardContent className="p-6">
+                    {block.seats.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-6">
+                        ไม่มีรายชื่อนักศึกษาในบล็อกนี้
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto rounded-[11px] border border-border bg-background">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-border hover:bg-transparent">
+                              <TableHead className="w-[60px]">ลำดับ</TableHead>
+                              <TableHead className="w-[140px]">รหัสนักศึกษา</TableHead>
+                              <TableHead>ชื่อ - สกุล</TableHead>
+                              <TableHead className="w-[100px]">สาขาวิชา</TableHead>
+                              <TableHead className="w-[110px] text-center">เลขที่นั่งสอบ</TableHead>
+                              <TableHead className="w-[120px] text-right">แถวใน Sheet</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {block.seats.map((seat) => (
+                              <TableRow key={`${block.id}:${seat.row}`} className="border-border">
+                                <TableCell className="font-num text-xs text-muted-foreground">
+                                  {seat.no}
+                                </TableCell>
+                                <TableCell>
+                                  <Link
+                                    href={`/student/${seat.studentId}`}
+                                    className="font-num font-semibold text-primary hover:underline text-sm"
+                                  >
+                                    {seat.studentId}
+                                  </Link>
+                                </TableCell>
+                                <TableCell className="text-sm text-foreground">
+                                  {seat.name || "-"}
+                                </TableCell>
+                                <TableCell>
+                                  {seat.major ? <MajorBadge major={seat.major} /> : "-"}
+                                </TableCell>
+                                <TableCell className="text-center font-num font-bold text-foreground">
+                                  {seat.seat || "-"}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <SourceRef source={seat.source} compact />
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -230,10 +315,10 @@ async function CourseContent({ params }: Pick<PageProps<"/course/[code]">, "para
 
 function CourseSkeleton() {
   return (
-    <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 animate-pulse space-y-6">
-      <div className="h-6 w-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
-      <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-      <div className="h-64 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
+    <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 py-12 space-y-6 animate-pulse">
+      <Skeleton className="h-5 w-32 rounded-full" />
+      <Skeleton className="h-32 w-full rounded-[18px]" />
+      <Skeleton className="h-64 w-full rounded-[18px]" />
     </main>
   );
 }

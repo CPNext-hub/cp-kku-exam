@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 interface SearchBoxProps {
   initialQuery?: string;
@@ -19,48 +22,38 @@ export function SearchBox({ initialQuery = "", autoFocus = false }: SearchBoxPro
     <div className="w-full max-w-2xl mx-auto">
       <form action="/" method="GET" className="relative">
         <div className="relative flex items-center">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400">
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground">
+            <Search className="w-5 h-5" />
           </div>
-          <input
+          <Input
             type="search"
             name="q"
             defaultValue={initialQuery}
             autoFocus={autoFocus}
-            placeholder="ค้นหาด้วยรหัสนักศึกษา (เช่น 683380531-4), รหัสวิชา, ห้องสอบ หรือ สาขา..."
-            className="w-full pl-11 pr-24 py-3.5 text-sm sm:text-base rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm transition-all"
+            placeholder="ค้นหารหัสนักศึกษา (เช่น 683380531-4), วิชา, ห้องสอบ หรือ สาขา..."
+            className="w-full h-12 pl-11 pr-28 rounded-full text-[17px] border-border bg-background placeholder:text-muted-foreground focus-visible:ring-primary shadow-none"
           />
-          <button
-            type="submit"
-            className="absolute right-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white transition-all shadow-sm"
-          >
-            ค้นหา
-          </button>
+          <div className="absolute right-1.5">
+            <Button
+              type="submit"
+              className="h-9 px-6 rounded-full text-[15px] font-semibold bg-primary text-primary-foreground hover:bg-cp-blue-press transition-colors shadow-none"
+            >
+              ค้นหา
+            </Button>
+          </div>
         </div>
       </form>
 
-      <div className="mt-3 flex items-center flex-wrap gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-        <span className="font-medium">ลองค้นหา:</span>
+      <div className="mt-3 flex items-center justify-center flex-wrap gap-2 text-xs text-muted-foreground">
+        <span className="font-normal">ลองค้นหา:</span>
         {suggestions.map((s, idx) => (
           <Link
             key={idx}
             href={`/?q=${encodeURIComponent(s.value)}`}
-            className="inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors"
+            className="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
           >
-            <span className="opacity-60 mr-1">{s.label}:</span>
-            <span className="font-mono font-medium">{s.value}</span>
+            <span className="text-muted-foreground mr-1">{s.label}:</span>
+            <span className="font-num font-semibold">{s.value}</span>
           </Link>
         ))}
       </div>

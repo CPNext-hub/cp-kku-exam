@@ -119,9 +119,6 @@ export function buildIndexes(dataset: ExamDataset): ExamIndexes {
     // Unique course
     if (block.courseCode) uniqueCourses.add(block.courseCode);
 
-    // Unique room
-    if (block.room) uniqueRooms.add(block.room);
-
     // Course index (index both by slug and code)
     const courseKey = block.courseSlug || block.courseCode;
     let courseGroup = byCourse.get(courseKey);
@@ -141,19 +138,24 @@ export function buildIndexes(dataset: ExamDataset): ExamIndexes {
     courseGroup.blocks.push(block);
     courseGroup.totalSeats += block.seats.length;
 
-    // Room index
-    let roomSched = byRoom.get(block.room);
-    if (!roomSched) {
-      roomSched = {
-        room: block.room,
-        isCancelled: block.status === "cancelled",
-        blocks: [],
-        totalSeats: 0,
-      };
-      byRoom.set(block.room, roomSched);
+    // Unique room (exclude cancelled placeholder)
+    if (block.room && block.room !== "—" && block.room !== "ยกเลิกการสอบ") {
+      uniqueRooms.add(block.room);
+
+      // Room index
+      let roomSched = byRoom.get(block.room);
+      if (!roomSched) {
+        roomSched = {
+          room: block.room,
+          isCancelled: false,
+          blocks: [],
+          totalSeats: 0,
+        };
+        byRoom.set(block.room, roomSched);
+      }
+      roomSched.blocks.push(block);
+      roomSched.totalSeats += block.seats.length;
     }
-    roomSched.blocks.push(block);
-    roomSched.totalSeats += block.seats.length;
 
     // Session index
     let sessionGroup = bySession.get(block.gid);

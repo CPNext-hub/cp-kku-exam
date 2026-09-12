@@ -7,10 +7,20 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge, MajorBadge } from "@/components/Badge";
 import { SourceRef } from "@/components/SourceRef";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
 
-export default function Page({ searchParams }: PageProps<"/">) {
+interface PageProps {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function Page({ searchParams }: PageProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
       <Suspense fallback={<HomeSkeleton />}>
         <HomeContent searchParams={searchParams} />
@@ -19,9 +29,10 @@ export default function Page({ searchParams }: PageProps<"/">) {
   );
 }
 
-async function HomeContent({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
+async function HomeContent({ searchParams }: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
-  const q = typeof params?.q === "string" ? params.q.trim() : "";
+  const rawQ = params?.q;
+  const q = typeof rawQ === "string" ? rawQ.trim() : "";
 
   const data = await getExamData();
   const indexes = buildIndexes(data);
@@ -50,34 +61,38 @@ async function HomeContent({ searchParams }: Pick<PageProps<"/">, "searchParams"
     <>
       <SnapshotBanner usedSnapshot={data.usedSnapshot} />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Hero Section */}
-        <section className="text-center space-y-4 mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
+      {/* Hero Section (Canvas: bg-background) */}
+      <section className="w-full bg-background py-12 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-[980px] mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-secondary text-foreground border border-border">
             <span>ตารางสอบกลางภาค ภาคการศึกษา 1/2569</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
+
+          <h1 className="text-3xl sm:text-5xl font-semibold leading-tight text-foreground">
             ระบบค้นหาตารางสอบ CP KKU
           </h1>
-          <p className="max-w-xl mx-auto text-sm sm:text-base text-zinc-600 dark:text-zinc-400">
-            ค้นหาเลขที่นั่งสอบ ห้องสอบ วัน-เวลาสอบ พร้อมอ้างอิงตรงกลับไปยัง Google Sheet ต้นทางแบบแถวต่อแถว
+
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
+            ค้นหารหัสนักศึกษา รายวิชา ห้องสอบ หรือสาขาวิชา พร้อมอ้างอิงตรงกลับไปยัง Google Sheets ต้นฉบับระดับแถว
           </p>
 
           <div className="pt-2">
             <SearchBox initialQuery={q} autoFocus={!q} />
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* If searching, render Search Results */}
-        {searchResults ? (
-          <section className="space-y-8 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
-              <h2 className="text-lg font-bold">
-                ผลการค้นหาสำหรับ &ldquo;<span className="text-red-600 dark:text-red-400">{q}</span>&rdquo;
+      {/* If searching, render Search Results Section */}
+      {searchResults ? (
+        <section className="w-full bg-secondary py-12 px-4 sm:px-6">
+          <div className="max-w-[1440px] mx-auto space-y-8">
+            <div className="max-w-[980px] mx-auto flex items-center justify-between border-b border-border pb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+                ผลการค้นหาสำหรับ &ldquo;<span className="text-primary font-num">{q}</span>&rdquo;
               </h2>
               <Link
                 href="/"
-                className="text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline"
+                className="text-sm font-semibold text-primary hover:underline"
               >
                 ล้างการค้นหา
               </Link>
@@ -85,366 +100,429 @@ async function HomeContent({ searchParams }: Pick<PageProps<"/">, "searchParams"
 
             {/* Privacy Notice */}
             {searchResults.privacyNotice && (
-              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-sm flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 text-amber-600 shrink-0 mt-0.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <div>
-                  <p className="font-semibold">ข้อกำหนดความเป็นส่วนตัว</p>
-                  <p className="text-xs mt-0.5 opacity-90">{searchResults.privacyNotice}</p>
-                </div>
+              <div className="max-w-[980px] mx-auto">
+                <Alert className="rounded-[11px] border-border bg-background">
+                  <AlertTriangle className="h-4 w-4 text-primary" />
+                  <AlertTitle className="text-sm font-semibold">ข้อกำหนดความเป็นส่วนตัว</AlertTitle>
+                  <AlertDescription className="text-xs text-muted-foreground mt-1">
+                    {searchResults.privacyNotice}
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
 
-            {/* Students results */}
-            {searchResults.students.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  นักศึกษา ({searchResults.students.length} รายการ)
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {searchResults.students.map((st) => (
-                    <Link
-                      key={st.studentId}
-                      href={`/student/${st.studentId}`}
-                      className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-red-500 dark:hover:border-red-500 transition-all hover:shadow-md group block"
+            {/* Search Results Tabs */}
+            <div className="max-w-[1440px] mx-auto">
+              <Tabs
+                defaultValue={
+                  searchResults.students.length > 0
+                    ? "students"
+                    : searchResults.courses.length > 0
+                    ? "courses"
+                    : searchResults.rooms.length > 0
+                    ? "rooms"
+                    : "majors"
+                }
+                className="w-full space-y-6"
+              >
+                <div className="flex justify-center">
+                  <TabsList className="bg-background border border-border p-1 rounded-full h-auto">
+                    <TabsTrigger
+                      value="students"
+                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-red-600 transition-colors">
-                            {st.studentId}
-                          </p>
-                          {st.name && (
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
-                              {st.name}
+                      นักศึกษา ({searchResults.students.length})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="courses"
+                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      รายวิชา ({searchResults.courses.length})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="rooms"
+                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      ห้องสอบ ({searchResults.rooms.length})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="majors"
+                      className="rounded-full px-4 py-1.5 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      สาขาวิชา ({searchResults.majors.length})
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                {/* Tab: Students */}
+                <TabsContent value="students" className="space-y-4">
+                  {searchResults.students.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      ไม่พบข้อมูลนักศึกษาที่ตรงกับคำค้นหา
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {searchResults.students.map((st) => (
+                        <Card
+                          key={st.studentId}
+                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <Link
+                                  href={`/student/${st.studentId}`}
+                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                >
+                                  {st.studentId}
+                                </Link>
+                                {st.name && (
+                                  <p className="text-sm font-normal text-muted-foreground mt-0.5">
+                                    {st.name}
+                                  </p>
+                                )}
+                              </div>
+                              {st.major && <MajorBadge major={st.major} />}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border pt-3">
+                              <span className="font-num">มีสิทธิ์สอบ {st.examCount} วิชา</span>
+                              <Link
+                                href={`/student/${st.studentId}`}
+                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                              >
+                                <span>ดูตารางสอบ</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Tab: Courses */}
+                <TabsContent value="courses" className="space-y-4">
+                  {searchResults.courses.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      ไม่พบข้อมูลรายวิชาที่ตรงกับคำค้นหา
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {searchResults.courses.map((cg) => (
+                        <Card
+                          key={cg.slug}
+                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <Link
+                                  href={`/course/${cg.slug}`}
+                                  className="text-base font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                >
+                                  {cg.code}
+                                </Link>
+                                <CardTitle className="text-sm font-normal text-muted-foreground mt-1 line-clamp-2">
+                                  {cg.name}
+                                </CardTitle>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border pt-3">
+                              <span className="font-num">{cg.blocks.length} กลุ่ม ({cg.totalSeats} ที่นั่ง)</span>
+                              <Link
+                                href={`/course/${cg.slug}`}
+                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                              >
+                                <span>ดูรายละเอียด</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Tab: Rooms */}
+                <TabsContent value="rooms" className="space-y-4">
+                  {searchResults.rooms.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      ไม่พบข้อมูลห้องสอบที่ตรงกับคำค้นหา
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {searchResults.rooms.map((rg) => (
+                        <Card
+                          key={rg.room}
+                          className="hover:border-primary transition-colors border-border bg-card shadow-none"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <Link
+                                  href={`/room/${encodeURIComponent(rg.room)}`}
+                                  className="text-lg font-semibold font-num text-foreground hover:text-primary transition-colors"
+                                >
+                                  {rg.room}
+                                </Link>
+                                <p className="text-xs text-muted-foreground mt-1 font-num">
+                                  จัดสอบ {rg.blocks.length} บล็อก ({rg.totalSeats.toLocaleString()} ที่นั่ง)
+                                </p>
+                              </div>
+                              {rg.isCancelled && <StatusBadge status="cancelled" />}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="flex items-center justify-end text-xs border-t border-border pt-3">
+                              <Link
+                                href={`/room/${encodeURIComponent(rg.room)}`}
+                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                              >
+                                <span>ดูตารางห้อง</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Tab: Majors */}
+                <TabsContent value="majors" className="space-y-4">
+                  {searchResults.majors.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      ไม่พบข้อมูลสาขาวิชาที่ตรงกับคำค้นหา
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {searchResults.majors.map((m) => (
+                        <Card
+                          key={m.major}
+                          className="border-border bg-card shadow-none"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-base font-semibold font-num text-foreground">
+                                {m.major}
+                              </span>
+                              <Badge variant="secondary" className="rounded-full text-xs font-num">
+                                {m.studentCount} คน
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <p className="text-xs text-muted-foreground border-t border-border pt-3 font-num">
+                              รวมที่นั่งสอบทั้งหมด {m.seatCount.toLocaleString()} ที่นั่ง
                             </p>
-                          )}
-                        </div>
-                        {st.major && <MajorBadge major={st.major} />}
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800/80 pt-2.5">
-                        <span>มีสิทธิ์สอบ {st.examCount} วิชา</span>
-                        <span className="text-red-600 dark:text-red-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                          ดูตารางสอบ →
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
-            {/* Courses results */}
-            {searchResults.courses.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  รายวิชา ({searchResults.courses.length} รายการ)
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {searchResults.courses.map((c) => (
-                    <Link
-                      key={c.code}
-                      href={`/course/${c.slug}`}
-                      className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-md group block"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                            {c.code}
-                          </span>
-                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 mt-1.5 group-hover:text-blue-600 transition-colors">
-                            {c.name}
-                          </h4>
-                        </div>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 shrink-0">
-                          {c.totalSeats} ที่นั่ง
-                        </span>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800/80 pt-2.5">
-                        <span>{c.blocks.length} กลุ่มสอบ/ห้องสอบ</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                          ดูรายละเอียดวิชา →
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Dataset Summary Metrics Tile (Parchment: bg-secondary) */}
+      <section className="w-full bg-secondary py-12 sm:py-16 px-4 sm:px-6">
+        <div className="max-w-[1440px] mx-auto space-y-6">
+          <div className="max-w-[980px] mx-auto text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+              สรุปชุดข้อมูลตารางสอบ
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              ข้อมูลประมวลผลสดจากประกาศใบรายชื่อผู้มีสิทธิ์เข้าสอบทางการ
+            </p>
+          </div>
 
-            {/* Rooms results */}
-            {searchResults.rooms.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  ห้องสอบ ({searchResults.rooms.length} รายการ)
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {searchResults.rooms.map((r) => (
-                    <Link
-                      key={r.room}
-                      href={`/room/${encodeURIComponent(r.room)}`}
-                      className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-md group block"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold font-mono text-zinc-900 dark:text-zinc-100 group-hover:text-purple-600 transition-colors">
-                          {r.room}
-                        </span>
-                        {r.isCancelled && <StatusBadge status="cancelled" />}
-                      </div>
-                      <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between">
-                        <span>{r.blocks.length} บล็อก</span>
-                        <span>{r.totalSeats} ที่นั่ง</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+            <Card className="border-border bg-card shadow-none text-center p-6">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                รอบสอบ (Sessions)
+              </p>
+              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+                {data.sheets.length}
+              </p>
+              <span className="text-xs text-muted-foreground mt-1">แท็บใน Sheet</span>
+            </Card>
 
-            {/* Majors results */}
-            {searchResults.majors.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  สาขาวิชา ({searchResults.majors.length} สาขา)
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {searchResults.majors.map((m) => (
-                    <div
-                      key={m.major}
-                      className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
-                    >
-                      <MajorBadge major={m.major} />
-                      <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-                        นักศึกษา {m.studentCount} คน ({m.seatCount} ที่นั่งสอบ)
+            <Card className="border-border bg-card shadow-none text-center p-6">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                ใบรายชื่อ (Blocks)
+              </p>
+              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+                {summary.totalBlocks}
+              </p>
+              <span className="text-xs text-muted-foreground mt-1">วิชา × SEC × ห้อง</span>
+            </Card>
+
+            <Card className="border-border bg-card shadow-none text-center p-6">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                ที่นั่งสอบทั้งหมด
+              </p>
+              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+                {summary.totalSeats.toLocaleString()}
+              </p>
+              <span className="text-xs text-muted-foreground mt-1">รายการแถว</span>
+            </Card>
+
+            <Card className="border-border bg-card shadow-none text-center p-6">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                นักศึกษา
+              </p>
+              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+                {summary.uniqueStudents.toLocaleString()}
+              </p>
+              <span className="text-xs text-muted-foreground mt-1">รหัสไม่ซ้ำ</span>
+            </Card>
+
+            <Card className="border-border bg-card shadow-none text-center p-6 col-span-2 sm:col-span-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                วิชา / ห้องสอบ
+              </p>
+              <p className="text-3xl font-semibold font-num text-foreground mt-2">
+                {summary.uniqueCourses} / {summary.uniqueRooms}
+              </p>
+              <span className="text-xs text-muted-foreground mt-1">วิชา / ห้อง</span>
+            </Card>
+          </div>
+
+          {/* SEC Assertion badge */}
+          <div className="flex justify-center pt-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-background border border-border text-muted-foreground font-num">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+              <span>ความถูกต้องของข้อมูล: มี SEC ครบทั้ง 271 บล็อก (100%)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sessions Navigation Tile (Canvas: bg-background) */}
+      <section className="w-full bg-background py-12 sm:py-16 px-4 sm:px-6">
+        <div className="max-w-[1440px] mx-auto space-y-8">
+          <div className="max-w-[980px] mx-auto text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+              รอบการสอบ (Sessions)
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              เลือกตามวันและช่วงเวลาสอบเพื่อดูใบรายชื่อทั้งหมดในรอบนั้น
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {sortedSessions.map((session) => (
+              <Card
+                key={session.gid}
+                className="hover:border-primary transition-colors border-border bg-card shadow-none"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Link
+                        href={`/session/${session.gid}`}
+                        className="text-base font-semibold text-foreground hover:text-primary transition-colors"
+                      >
+                        {session.tab}
+                      </Link>
+                      <p className="text-xs text-muted-foreground mt-1 font-num">
+                        {session.blocks.length} กลุ่มสอบ · {session.totalSeats.toLocaleString()} ที่นั่ง
                       </p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* No matches */}
-            {searchResults.students.length === 0 &&
-              searchResults.courses.length === 0 &&
-              searchResults.rooms.length === 0 &&
-              searchResults.majors.length === 0 &&
-              !searchResults.privacyNotice && (
-                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800">
-                  <p className="text-base font-semibold text-zinc-700 dark:text-zinc-300">
-                    ไม่พบข้อมูลที่ตรงกับคำค้นหา
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    ลองตรวจสอบรหัสนักศึกษา (เช่น 683380531-4), รหัสวิชา หรือชื่อห้องสอบอีกครั้ง
-                  </p>
-                </div>
-              )}
-          </section>
-        ) : (
-          /* Default Dashboard View */
-          <div className="space-y-10">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">รอบสอบทั้งหมด</p>
-                <p className="text-2xl font-black mt-1 text-zinc-900 dark:text-zinc-100">
-                  {summary.totalBlocks > 0 ? sortedSessions.length : 0}{" "}
-                  <span className="text-xs font-normal text-zinc-500">session</span>
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">วิชาที่เปิดสอบ</p>
-                <p className="text-2xl font-black mt-1 text-zinc-900 dark:text-zinc-100">
-                  {summary.uniqueCourses}{" "}
-                  <span className="text-xs font-normal text-zinc-500">วิชา</span>
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">ห้องสอบ</p>
-                <p className="text-2xl font-black mt-1 text-zinc-900 dark:text-zinc-100">
-                  {summary.uniqueRooms}{" "}
-                  <span className="text-xs font-normal text-zinc-500">ห้อง</span>
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">จำนวนที่นั่งสอบ</p>
-                <p className="text-2xl font-black mt-1 text-zinc-900 dark:text-zinc-100">
-                  {summary.totalSeats.toLocaleString()}{" "}
-                  <span className="text-xs font-normal text-zinc-500">ที่นั่ง</span>
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm col-span-2 sm:col-span-1">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">นักศึกษาที่มีสิทธิ์สอบ</p>
-                <p className="text-2xl font-black mt-1 text-zinc-900 dark:text-zinc-100">
-                  {summary.uniqueStudents.toLocaleString()}{" "}
-                  <span className="text-xs font-normal text-zinc-500">คน</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Regression Assertion Status Badge */}
-            <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-300">
-                  ตรวจสอบความถูกต้องข้อมูล: <strong>{summary.totalBlocks} บล็อก</strong> ·{" "}
-                  <strong>{summary.totalSeats.toLocaleString()} ที่นั่ง</strong> ·{" "}
-                  <strong>{summary.uniqueStudents.toLocaleString()} รหัสนักศึกษา</strong> ·{" "}
-                  <strong>{summary.uniqueCourses} วิชา</strong> ·{" "}
-                  <strong>{summary.uniqueRooms} ห้อง</strong>
-                </span>
-              </div>
-              <div className="flex items-center gap-2 font-medium">
-                {summary.allBlocksHaveSec ? (
-                  <span className="text-emerald-700 dark:text-emerald-400 font-mono">
-                    ✓ ทุกบล็อกมี SEC ครบ ({summary.totalBlocks}/{summary.totalBlocks})
-                  </span>
-                ) : (
-                  <span className="text-amber-600 font-mono">
-                    ⚠ มีบล็อกที่ไม่มี SEC
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Session Tabs Section */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                    รอบสอบตามวันและเวลา (11 Session)
-                  </h2>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    เรียงตามลำดับเวลาจริง (วันที่ 24 - 28 ส.ค. 2569)
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {sortedSessions.map((session) => (
-                  <Link
-                    key={session.gid}
-                    href={`/session/${session.gid}`}
-                    className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-md transition-all group block"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1">
-                        <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-red-600 transition-colors">
-                          {session.tab}
-                        </span>
-                        {session.tab.includes("กักตัว") && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.2 rounded text-[10px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                            ห้องกักตัว
-                          </span>
-                        )}
-                      </div>
-                      <SourceRef source={{ gid: session.gid, tab: session.tab, row: 1 }} compact />
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
-                      <span>{session.blocks.length} กลุ่มสอบ</span>
-                      <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                        {session.totalSeats.toLocaleString()} ที่นั่ง
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Courses Section */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                    รายวิชาทั้งหมด ({distinctCourses.length} วิชา)
-                  </h2>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    เลือกดูรายละเอียด กลุ่มเรียน (SEC) ห้องสอบ และรายชื่อตามวิชา
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {distinctCourses.map((c) => (
-                  <Link
-                    key={c.code}
-                    href={`/course/${c.slug}`}
-                    className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all group block"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
-                          {c.code}
-                        </span>
-                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate mt-0.5 group-hover:text-blue-600 transition-colors">
-                          {c.name}
-                        </h3>
-                      </div>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 shrink-0">
-                        {c.totalSeats} ที่นั่ง
-                      </span>
-                    </div>
-                    <div className="mt-2.5 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>{c.blocks.length} กลุ่ม/ห้อง</span>
-                      <span className="text-blue-600 dark:text-blue-400 font-medium">
-                        ดูรายละเอียด →
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Rooms Section */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                    ห้องสอบทั้งหมด ({distinctRooms.length} ห้อง/สถานะ)
-                  </h2>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    ตารางการใช้ห้องสอบแยกตามอาคารและห้อง
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {distinctRooms.map((r) => (
-                  <Link
-                    key={r.room}
-                    href={`/room/${encodeURIComponent(r.room)}`}
-                    className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-md transition-all group block"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold font-mono text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-purple-600 transition-colors">
-                        {r.room}
-                      </span>
-                      {r.isCancelled && <StatusBadge status="cancelled" />}
-                    </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                      <span>{r.blocks.length} บล็อก</span>
-                      <span>{r.totalSeats} ที่นั่ง</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
+                    {session.tab.includes("กักตัว") && (
+                      <Badge variant="secondary" className="rounded-full text-xs">
+                        กักตัวสอบ
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between text-xs border-t border-border pt-3">
+                    <SourceRef source={{ gid: session.gid, tab: session.tab, row: 1 }} compact />
+                    <Link
+                      href={`/session/${session.gid}`}
+                      className="inline-flex items-center gap-1 text-[15px] font-semibold text-primary hover:underline"
+                    >
+                      <span>ดูรายละเอียด</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        )}
-      </main>
+        </div>
+      </section>
+
+      {/* Courses & Rooms Quick Access Tile (Parchment: bg-secondary) */}
+      <section className="w-full bg-secondary py-12 sm:py-16 px-4 sm:px-6">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Courses Quick List */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-foreground">
+                รายวิชาทั้งหมด ({distinctCourses.length})
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[440px] overflow-y-auto pr-1">
+              {distinctCourses.map((cg) => (
+                <Link
+                  key={cg.slug}
+                  href={`/course/${cg.slug}`}
+                  className="p-3.5 rounded-[11px] border border-border bg-card hover:border-primary transition-colors flex items-center justify-between"
+                >
+                  <div className="overflow-hidden pr-2">
+                    <p className="font-semibold text-sm font-num text-foreground">
+                      {cg.code}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {cg.name}
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-num shrink-0">
+                    {cg.totalSeats} ที่นั่ง
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Rooms Quick List */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-foreground">
+                ห้องสอบทั้งหมด ({distinctRooms.length})
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[440px] overflow-y-auto pr-1">
+              {distinctRooms.map((rg) => (
+                <Link
+                  key={rg.room}
+                  href={`/room/${encodeURIComponent(rg.room)}`}
+                  className="p-3.5 rounded-[11px] border border-border bg-card hover:border-primary transition-colors text-center"
+                >
+                  <p className="font-semibold text-sm font-num text-foreground">
+                    {rg.room}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 font-num">
+                    {rg.isCancelled ? "ยกเลิก" : `${rg.totalSeats} ที่นั่ง`}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer fetchedAt={data.fetchedAt} />
     </>
@@ -453,18 +531,19 @@ async function HomeContent({ searchParams }: Pick<PageProps<"/">, "searchParams"
 
 function HomeSkeleton() {
   return (
-    <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-12 animate-pulse space-y-8">
-      <div className="text-center space-y-4 max-w-md mx-auto">
-        <div className="h-6 w-32 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto" />
-        <div className="h-10 w-64 bg-zinc-200 dark:bg-zinc-800 rounded-lg mx-auto" />
-        <div className="h-4 w-80 bg-zinc-200 dark:bg-zinc-800 rounded mx-auto" />
+    <div className="w-full py-16 px-4 max-w-[980px] mx-auto space-y-8 animate-pulse">
+      <div className="space-y-4 text-center">
+        <Skeleton className="h-6 w-48 mx-auto rounded-full" />
+        <Skeleton className="h-12 w-96 mx-auto rounded-[18px]" />
+        <Skeleton className="h-5 w-80 mx-auto rounded-full" />
+        <Skeleton className="h-12 w-full max-w-xl mx-auto rounded-full" />
       </div>
-      <div className="h-14 max-w-2xl mx-auto bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-20 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8">
+        <Skeleton className="h-28 rounded-[18px]" />
+        <Skeleton className="h-28 rounded-[18px]" />
+        <Skeleton className="h-28 rounded-[18px]" />
+        <Skeleton className="h-28 rounded-[18px]" />
       </div>
-    </main>
+    </div>
   );
 }

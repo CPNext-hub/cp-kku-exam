@@ -144,7 +144,7 @@ export function parseSheetBlocks(
     if (colA === "ห้องสอบ") {
       if (colB === "ยกเลิกการสอบ") {
         currentBlock.status = "cancelled";
-        currentBlock.room = "ยกเลิกการสอบ";
+        currentBlock.room = "—";
       } else {
         currentBlock.room = colB;
       }
